@@ -295,7 +295,7 @@ class build_ext(_build_ext):
                 # Align behavior of gcc with msvc and export only symbols marked with __declspec(dllexport)
                 ext.extra_link_args += ["-Wl,--exclude-all-symbols"]
             else:
-                ext.extra_link_args += ["-flto"]
+                ext.extra_link_args += ["-flto", "-shared"]
 
                 rpaths = []
                 if lib_name == "simulator":
@@ -489,6 +489,10 @@ def _get_common_lib_ext(include_dirs, share_lib_dir):
     All libraries go into the same directory to enable loading without modifying the library path (e.g. LD_LIBRARY_PATH).
     """
 
+    python_lib_dirs = ["/usr/synopsys/verdi/U-2023.03-1/platform/linux64/Python/lib/"]
+    if sys.platform == "darwin":
+        python_lib_dirs = [sysconfig.get_config_var("LIBDIR")]
+
     #
     #  libcocotbutils
     #
@@ -504,15 +508,12 @@ def _get_common_lib_ext(include_dirs, share_lib_dir):
         include_dirs=include_dirs,
         libraries=libcocotbutils_libraries,
         sources=libcocotbutils_sources,
+        library_dirs=python_lib_dirs,
     )
 
     #
     #  libgpilog
     #
-    python_lib_dirs = []
-    if sys.platform == "darwin":
-        python_lib_dirs = [sysconfig.get_config_var("LIBDIR")]
-
     libgpilog_sources = [os.path.join(share_lib_dir, "gpi_log", "gpi_logging.cpp")]
     if os.name == "nt":
         libgpilog_sources += ["libgpilog.rc"]
@@ -521,6 +522,7 @@ def _get_common_lib_ext(include_dirs, share_lib_dir):
         define_macros=[("GPILOG_EXPORTS", "")] + _extra_defines,
         include_dirs=include_dirs,
         sources=libgpilog_sources,
+        library_dirs=python_lib_dirs,
     )
 
     #
@@ -537,6 +539,7 @@ def _get_common_lib_ext(include_dirs, share_lib_dir):
         include_dirs=include_dirs,
         libraries=["gpilog"],
         sources=libpygpilog_sources,
+        library_dirs=python_lib_dirs,
     )
 
     #
@@ -552,6 +555,7 @@ def _get_common_lib_ext(include_dirs, share_lib_dir):
         include_dirs=include_dirs,
         libraries=["gpilog", "cocotbutils"],
         sources=libembed_sources,
+        library_dirs=python_lib_dirs,
     )
 
     #
@@ -566,6 +570,7 @@ def _get_common_lib_ext(include_dirs, share_lib_dir):
         include_dirs=include_dirs,
         libraries=["gpilog", "cocotbutils", "pygpilog"],
         sources=libcocotb_sources,
+        library_dirs=python_lib_dirs,
     )
 
     #
@@ -588,6 +593,7 @@ def _get_common_lib_ext(include_dirs, share_lib_dir):
         include_dirs=include_dirs,
         libraries=["cocotbutils", "gpilog", "embed"],
         sources=libgpi_sources,
+        library_dirs=python_lib_dirs,
     )
 
     #
@@ -665,6 +671,10 @@ def _get_vhpi_lib_ext(
 
 
 def get_ext():
+    python_lib_dirs = ["/usr/synopsys/verdi/U-2023.03-1/platform/linux64/Python/lib/"]
+    if sys.platform == "darwin":
+        python_lib_dirs = [sysconfig.get_config_var("LIBDIR")]
+
     cfg_vars = distutils.sysconfig.get_config_vars()
 
     if sys.platform == "darwin":
@@ -696,6 +706,7 @@ def get_ext():
         share_lib_dir=share_lib_dir,
         sim_define="ICARUS",
         extra_lib=icarus_extra_lib,
+        extra_lib_dir=python_lib_dirs,
     )
     ext.append(icarus_vpi_ext)
 
@@ -712,6 +723,7 @@ def get_ext():
         share_lib_dir=share_lib_dir,
         sim_define="MODELSIM",
         extra_lib=modelsim_extra_lib,
+        extra_lib_dir=python_lib_dirs,
     )
     ext.append(modelsim_vpi_ext)
 
@@ -720,6 +732,7 @@ def get_ext():
         share_lib_dir=share_lib_dir,
         sim_define="MODELSIM",
         extra_lib=modelsim_extra_lib,
+        extra_lib_dir=python_lib_dirs,
     )
     ext.append(modelsim_vhpi_ext)
 
@@ -737,6 +750,7 @@ def get_ext():
         include_dirs=include_dirs,
         libraries=["gpi", "gpilog"] + modelsim_extra_lib,
         sources=fli_sources,
+        library_dirs=python_lib_dirs,
     )
 
     ext.append(fli_ext)
@@ -754,6 +768,7 @@ def get_ext():
         share_lib_dir=share_lib_dir,
         sim_define="GHDL",
         extra_lib=ghdl_extra_lib,
+        extra_lib_dir=python_lib_dirs,
     )
     ext.append(ghdl_vpi_ext)
 
@@ -763,12 +778,18 @@ def get_ext():
     if os.name == "posix":
         logger.info("Compiling libraries for Incisive/Xcelium")
         ius_vpi_ext = _get_vpi_lib_ext(
-            include_dirs=include_dirs, share_lib_dir=share_lib_dir, sim_define="IUS"
+            include_dirs=include_dirs,
+            share_lib_dir=share_lib_dir,
+            sim_define="IUS",
+            extra_lib_dir=python_lib_dirs,
         )
         ext.append(ius_vpi_ext)
 
         ius_vhpi_ext = _get_vhpi_lib_ext(
-            include_dirs=include_dirs, share_lib_dir=share_lib_dir, sim_define="IUS"
+            include_dirs=include_dirs,
+            share_lib_dir=share_lib_dir,
+            sim_define="IUS",
+            extra_lib_dir=python_lib_dirs,
         )
         ext.append(ius_vhpi_ext)
 
@@ -778,7 +799,10 @@ def get_ext():
     if os.name == "posix":
         logger.info("Compiling libraries for VCS")
         vcs_vpi_ext = _get_vpi_lib_ext(
-            include_dirs=include_dirs, share_lib_dir=share_lib_dir, sim_define="VCS"
+            include_dirs=include_dirs,
+            share_lib_dir=share_lib_dir,
+            sim_define="VCS",
+            extra_lib_dir=python_lib_dirs,
         )
         ext.append(vcs_vpi_ext)
 
@@ -795,6 +819,7 @@ def get_ext():
         share_lib_dir=share_lib_dir,
         sim_define="ALDEC",
         extra_lib=aldec_extra_lib,
+        extra_lib_dir=python_lib_dirs,
     )
     ext.append(aldec_vpi_ext)
 
@@ -803,6 +828,7 @@ def get_ext():
         share_lib_dir=share_lib_dir,
         sim_define="ALDEC",
         extra_lib=aldec_extra_lib,
+        extra_lib_dir=python_lib_dirs,
     )
     ext.append(aldec_vhpi_ext)
 
@@ -815,6 +841,7 @@ def get_ext():
             include_dirs=include_dirs,
             share_lib_dir=share_lib_dir,
             sim_define="VERILATOR",
+            extra_lib_dir=python_lib_dirs,
         )
         ext.append(verilator_vpi_ext)
 
@@ -824,7 +851,10 @@ def get_ext():
     if os.name == "posix":
         logger.info("Compiling libraries for NVC")
         nvc_vhpi_ext = _get_vhpi_lib_ext(
-            include_dirs=include_dirs, share_lib_dir=share_lib_dir, sim_define="NVC"
+            include_dirs=include_dirs,
+            share_lib_dir=share_lib_dir,
+            sim_define="NVC",
+            extra_lib_dir=python_lib_dirs,
         )
         ext.append(nvc_vhpi_ext)
 
