@@ -48,7 +48,7 @@ from typing import (
 )
 
 import cocotb
-from cocotb.regression import Test
+from cocotb.regression import Test as Test
 
 Result = TypeVar("Result")
 

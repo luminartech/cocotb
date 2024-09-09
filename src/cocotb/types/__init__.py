@@ -7,7 +7,7 @@ from typing import Generic, Iterable, Iterator, Optional, TypeVar, Union, overlo
 T = TypeVar("T")
 
 
-from .range import Range  # noqa: E402 F401
+from .range import Range  as Range # noqa: E402 F401
 
 
 class ArrayLike(ABC, Generic[T]):
