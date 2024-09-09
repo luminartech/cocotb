@@ -118,6 +118,6 @@ class ArrayLike(ABC, Generic[T]):
         return count
 
 
-from .array import Array  # noqa: E402 F401
-from .logic import Logic  # noqa: E402 F401
-from .logic_array import LogicArray  # noqa: E402 F401
+from .array import Array as Array # noqa: E402 F401
+from .logic import Logic as Logic # noqa: E402 F401
+from .logic_array import LogicArray as LogicArray  # noqa: E402 F401
